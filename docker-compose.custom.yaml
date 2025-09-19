@@ -9,7 +9,7 @@ services:
     ports:
       - 13378:80
     volumes:
-      - ${INSTALL_DIRECTORY}/config/audiobookshelf:/config
+      - ${INSTALL_DIRECTORY}/config/audiobookshelf/config:/config
       - ${INSTALL_DIRECTORY}/config/audiobookshelf/metadata:/metadata
       - ${MEDIA_DIRECTORY}/audiobooks:/audiobooks
     restart: always
