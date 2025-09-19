@@ -12,6 +12,11 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${MEDIA_DIRECTORY}:/data
       - ${INSTALL_DIRECTORY}/config/${MEDIA_SERVICE}:/config
+    #<hardware_acceleration_groups>
+      #<hardware_acceleration_render>
+      #<hardware_acceleration_video>
+    #<hardware_acceleration_devices>
+      #<hardware_acceleration_dri>
     ports: # plex
       - 8096:8096 # plex
     restart: unless-stopped
@@ -40,7 +45,7 @@ services:
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
-      - TZ=America/Montevideo
+      - TZ=${TIMEZONE}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${MEDIA_DIRECTORY}:/data

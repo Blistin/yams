@@ -181,8 +181,25 @@ configure_media_service() {
     echo
     log_success "YAMS will install \"$media_service\" on port \"$media_service_port\""
 
+    # Hardware acceleration configuration
+    echo
+    echo
+    log_info "Hardware acceleration allows your media server to use GPU resources for transcoding."
+    log_info "This can significantly improve performance when converting video files."
+    log_info "Hardware acceleration requires compatible Intel/ATI/AMD graphics hardware."
+    log_info "If you're unsure, you can enable this and disable it later if issues occur."
+    
+    read -p "Enable hardware acceleration (GPU transcoding)? (Y/n) [Default = y]: " enable_hardware_acceleration
+    enable_hardware_acceleration=${enable_hardware_acceleration:-"y"}
+
+    if [ "${enable_hardware_acceleration,,}" = "y" ]; then
+        log_success "Hardware acceleration will be enabled"
+    else
+        log_info "Hardware acceleration will be disabled"
+    fi
+
     # Export for use in other functions
-    export media_service media_service_port
+    export media_service media_service_port enable_hardware_acceleration
 }
 
 configure_vpn() {
@@ -359,6 +376,21 @@ get_user_info() {
     export username puid pgid
 }
 
+configure_timezone() {
+    echo
+    echo
+    log_info "Time zone configuration is important for proper scheduling and logging."
+    log_info "Please enter your timezone in the format 'Region/City' (e.g., America/New_York, Europe/London)."
+    log_info "You can find valid timezones at: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
+    
+    read -p "Enter your timezone [America/New_York]: " timezone
+    timezone=${timezone:-"America/New_York"}
+    
+    log_success "Timezone set to: $timezone"
+    
+    export timezone
+}
+
 get_installation_paths() {
     read -p "Installation directory? [$DEFAULT_INSTALL_DIR]: " install_directory
     install_directory=${install_directory:-$DEFAULT_INSTALL_DIR}
@@ -412,6 +444,7 @@ update_configuration_files() {
            -e "s|<media_directory>|$media_directory|g" \
            -e "s|<media_service>|$media_service|g" \
            -e "s|<install_directory>|$install_directory|g" \
+           -e "s|<timezone>|$timezone|g" \
            -e "s|vpn_enabled|$setup_vpn|g" "$env_file" || \
         log_error "Failed to update .env file"
 
@@ -439,6 +472,25 @@ fi
                -e 's|ports: # plex|#ports: # plex|g' \
                -e 's|- 8096:8096 # plex|#- 8096:8096 # plex|g' "$filename" || \
             log_error "Failed to configure Plex settings"
+    fi
+
+    # Configure hardware acceleration settings
+    if [ "${enable_hardware_acceleration,,}" = "y" ]; then
+        log_info "Configuring hardware acceleration..."
+        sed -i -e 's|#<hardware_acceleration_devices>|devices:|g' \
+               -e 's|#<hardware_acceleration_dri>|- /dev/dri:/dev/dri|g' \
+               -e 's|#<hardware_acceleration_groups>|group_add:|g' \
+               -e 's|#<hardware_acceleration_render>|- "993"|g' \
+               -e 's|#<hardware_acceleration_video>|- "44"|g' "$filename" || \
+            log_error "Failed to configure hardware acceleration"
+    else
+        log_info "Hardware acceleration disabled, removing device configurations..."
+        sed -i -e '/#<hardware_acceleration_devices>/d' \
+               -e '/#<hardware_acceleration_dri>/d' \
+               -e '/#<hardware_acceleration_groups>/d' \
+               -e '/#<hardware_acceleration_render>/d' \
+               -e '/#<hardware_acceleration_video>/d' "$filename" || \
+            log_error "Failed to remove hardware acceleration placeholders"
     fi
 
     # Configure VPN settings if enabled
@@ -512,6 +564,9 @@ check_dependencies
 
 # Get user information
 get_user_info
+
+# Configure timezone
+configure_timezone
 
 # Get installation paths
 get_installation_paths
