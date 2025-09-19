@@ -250,3 +250,121 @@ And most importantly: Thank you for using YAMS! 🙏
 #+HTML: </a>
 
 Made with [[https://contrib.rocks][contrib.rocks]].
+
+* Custom Additions
+:PROPERTIES:
+:ID:       f1a3c9e5-7d2b-4e89-a45f-8c9f1e3d5a67
+:END:
+
+This fork of YAMS includes the following custom enhancements:
+
+** Hardware Acceleration Support
+:PROPERTIES:
+:ID:       a8b2f4c6-9e1d-4f78-b32c-7a5e8d9c2f41
+:END:
+
+Added comprehensive GPU hardware acceleration support for media transcoding:
+
+- *Interactive Configuration*: Installation script now prompts users to enable/disable hardware acceleration
+- *Automatic Setup*: When enabled, automatically configures Docker containers with:
+  + Device access to ~/dev/dri~ for GPU hardware
+  + Proper group permissions for ~render~ (993) and ~video~ (44) groups
+  + Hardware acceleration device mapping in Docker Compose
+
+- *Benefits*:
+  + Significantly improved transcoding performance
+  + Reduced CPU usage during media conversion
+  + Better streaming experience for multiple users
+
+- *Compatibility*: Supports Intel/ATI/AMD graphics hardware with proper drivers
+
+** Configurable Timezone Support
+:PROPERTIES:
+:ID:       c7d9e2f8-4a6b-4c89-9f3e-1b8d5a7c3e92
+:END:
+
+Enhanced timezone configuration for better scheduling and logging:
+
+- *Interactive Setup*: Installation prompts for user's timezone instead of hardcoded default
+- *Flexible Input*: Accepts standard timezone formats (e.g., ~America/New_York~, ~Europe/London~)
+- *Environment Integration*: Timezone is properly configured across all containers via ~TIMEZONE~ environment variable
+- *Default Fallback*: Defaults to ~America/New_York~ if no timezone is specified
+
+- *Benefits*:
+  + Accurate scheduling for automated downloads
+  + Correct timestamps in logs and interfaces
+  + Proper date/time display in media server interfaces
+
+** Technical Implementation
+:PROPERTIES:
+:ID:       b4f6c8e1-3a7d-4e92-8f5c-9d2a6b4e7f83
+:END:
+
+These custom additions are implemented through:
+
+- *Enhanced Installation Script* (~install.sh~):
+  + Added ~configure_timezone()~ function
+  + Added hardware acceleration prompts and configuration
+  + Extended Docker Compose template processing
+
+- *Modified Docker Compose Template* (~docker-compose.example.yaml~):
+  + Added hardware acceleration device and group placeholders
+  + Replaced hardcoded timezone with ~${TIMEZONE}~ variable
+
+- *Extended Environment Configuration* (~.env.example~):
+  + Added ~TIMEZONE~ environment variable support
+
+These modifications maintain full compatibility with the original YAMS functionality while adding enhanced configuration options for improved performance and user experience.
+
+** Additional Media Services
+:PROPERTIES:
+:ID:       e5f7c2a9-6b4d-4e81-9c3f-2a8e5b9d1c74
+:END:
+
+The custom Docker Compose configuration (~docker-compose.custom.yaml~) includes additional specialized media services:
+
+*** Audiobookshelf
+:PROPERTIES:
+:ID:       d4c8f1e3-7a9b-4f56-8e2d-5c9a7b3f6e81
+:END:
+
+A self-hosted audiobook and podcast server for managing audio content:
+
+- *Container*: ~advplyr/audiobookshelf:2.28.0~
+- *Access*: http://localhost:13378
+- *Features*:
+  + Audiobook library management and streaming
+  + Podcast subscription and playback
+  + Progress tracking across devices
+  + User management and sharing
+  + Mobile app support
+- *Storage*:
+  + Configuration: ~${INSTALL_DIRECTORY}/config/audiobookshelf/~
+  + Media library: ~${MEDIA_DIRECTORY}/audiobooks/~
+  + Metadata: Separate metadata storage for library information
+
+*** Calibre-Web
+:PROPERTIES:
+:ID:       a7b3e9f2-4c6d-4e85-9a1f-8b5c2d7e4a93
+:END:
+
+A web-based eBook library management system built on Calibre:
+
+- *Container*: ~lscr.io/linuxserver/calibre-web:0.6.25~
+- *Access*: http://localhost:8083
+- *Features*:
+  + Web-based eBook reader and library browser
+  + Support for multiple eBook formats (EPUB, PDF, MOBI, etc.)
+  + User management with reading progress tracking
+  + Send-to-Kindle functionality
+  + OPDS catalog support for eReader integration
+  + Search and filtering capabilities
+- *Storage*:
+  + Configuration: ~${INSTALL_DIRECTORY}/config/calibre-web/~
+  + eBook library: ~${MEDIA_DIRECTORY}/books/~
+- *Integration*:
+  + Uses timezone configuration from main YAMS setup
+  + Follows YAMS user permission model (PUID/PGID)
+  + Optional Calibre converter support via Docker mods
+
+These additional services extend YAMS beyond traditional video/audio content to provide a complete digital media ecosystem including audiobooks and eBooks, making it a comprehensive self-hosted media solution.
