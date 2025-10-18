@@ -6,6 +6,9 @@ services:
     environment:
       - AUDIOBOOKSHELF_UID=99
       - AUDIOBOOKSHELF_GID=100
+      # Controls session expirations for logged in users
+      - ACCESS_TOKEN_EXPIRY=86400 # Bump 12 hours to 1 day
+      - REFRESH_TOKEN_EXPIRY=2592000 # Bump 7 days default to 30 days
     ports:
       - 13378:80
     volumes:
