@@ -1,3 +1,8 @@
+networks:
+  default:
+    external: true
+    name: yams_network
+
 services:
   # Audiobookshelf is a self-hosted audiobook and podcast server
   audiobookshelf:

@@ -151,7 +151,7 @@ services:
 
   # Gluetun is our VPN, so you can download torrents safely
   gluetun:
-    image: qmcgaw/gluetun:v3
+    image: qmcgaw/gluetun:v3.40.0
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -173,6 +173,8 @@ services:
       - PORT_FORWARD_ONLY=on
       - VPN_PORT_FORWARDING=on
       - FIREWALL_OUTBOUND_SUBNETS=172.60.0.0/24
+    volumes:
+      - ${INSTALL_DIRECTORY}/config/gluetun:/gluetun
     restart: unless-stopped
     networks:
       yams_network:
@@ -195,7 +197,7 @@ services:
 
   # Watchtower is going to keep our instances updated
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
     container_name: watchtower
     environment:
       - WATCHTOWER_CLEANUP=true
